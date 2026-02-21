@@ -1,143 +1,131 @@
-import React from 'react'
-import { Calendar, Cpu, Users, CheckCircle, Zap } from 'lucide-react'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Users, 
+  BookOpen, 
+  School, 
+  Settings, 
+  MapPin, 
+  Sparkles, 
+  ArrowRight 
+} from 'lucide-react'; // Install lucide-react for professional icons
 
-const LandingPage = () => {
+const Home = () => {
+  const adminTools = [
+    {
+      title: "Faculty Management",
+      desc: "Register professors and manage their availability.",
+      path: "/manage-faculty",
+      icon: <Users className="w-6 h-6 text-blue-600" />,
+      color: "bg-blue-50",
+    },
+    {
+      title: "Room Allocation",
+      desc: "Manage classrooms, labs, and capacities.",
+      path: "/manage-rooms",
+      icon: <MapPin className="w-6 h-6 text-emerald-600" />,
+      color: "bg-emerald-50",
+    },
+    {
+      title: "Course Catalog",
+      desc: "Define subjects, hours per week, and types.",
+      path: "/manage-courses",
+      icon: <BookOpen className="w-6 h-6 text-purple-600" />,
+      color: "bg-purple-50",
+    },
+    {
+      title: "Class Structure",
+      desc: "Organize semesters, sections, and departments.",
+      path: "/manage-classes",
+      icon: <School className="w-6 h-6 text-orange-600" />,
+      color: "bg-orange-50",
+    },
+    {
+      title: "System Metadata",
+      desc: "Configure time slots, breaks, and institute rules.",
+      path: "/manage-metadata",
+      icon: <Settings className="w-6 h-6 text-slate-600" />,
+      color: "bg-slate-100",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-slate-100 text-slate-900">
-
+    <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Hero Section */}
-      <header className="max-w-6xl mx-auto px-6 py-28 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-sm font-semibold mb-6">
-          <Calendar size={16} /> AI Timetable Automation
-        </div>
-
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6">
-          Smarter University Scheduling.
-          <span className="block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Zero Conflicts. Zero Stress.
-          </span>
+      <header className="mb-12">
+        <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-2">
+          Institute Control Center
         </h1>
-
-        <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Generate department-wide timetables in seconds. Handle labs,
-          electives, and faculty constraints with intelligent conflict resolution.
+        <p className="text-slate-500 text-lg">
+          Manage your resources and generate optimized schedules.
         </p>
-
-        <div className="flex flex-wrap justify-center gap-4">
-          <button className="bg-indigo-600 text-white px-8 py-4 rounded-xl text-lg font-semibold flex items-center gap-2 hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20">
-            <Cpu size={20} /> Generate Timetable
-          </button>
-
-          <button className="px-8 py-4 rounded-xl text-lg font-semibold border border-slate-300 hover:bg-slate-100 transition">
-            View Demo
-          </button>
-        </div>
       </header>
 
-      {/* Features */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
-        <div className="grid md:grid-cols-3 gap-10">
-          <FeatureCard
-            icon={<Zap className="text-amber-500" />}
-            title="AI Rule Engine"
-            description="Add custom rules like 'No labs on Friday' or 'Morning-only classes' and watch schedules adapt instantly."
-          />
-          <FeatureCard
-            icon={<Users className="text-blue-500" />}
-            title="Multi-Department Control"
-            description="Manage multiple semesters, sections, and rooms with structured slot-level metadata."
-          />
-          <FeatureCard
-            icon={<CheckCircle className="text-green-500" />}
-            title="Smart Conflict Detection"
-            description="Prevents faculty overlaps, ensures lab continuity, and validates constraints automatically."
-          />
-        </div>
-      </section>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left: AI Generation Highlight (Taking up 2 rows) */}
+        <div className="lg:col-span-1 lg:row-span-2">
+          <div className="h-full bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2rem] p-8 text-white shadow-2xl flex flex-col justify-between relative overflow-hidden group">
+            <div className="relative z-10">
+              <div className="bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold mb-4">AI Timetable Generator</h2>
+              <p className="text-blue-100 mb-8 leading-relaxed">
+                Our AI algorithm cross-references faculty availability, room conflicts, and course hours to create a perfect schedule in seconds.
+              </p>
+            </div>
+            
+            <Link 
+              to="/generate-timetable" 
+              className="relative z-10 bg-white text-blue-700 py-4 px-6 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-50 transition-all transform active:scale-95"
+            >
+              LAUNCH AI ENGINE <ArrowRight className="w-5 h-5" />
+            </Link>
 
-      {/* Pricing */}
-      <section className="bg-white border-t py-24">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-          <p className="text-slate-600 mb-14">
-            Built for institutions of all sizes.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-10">
-            <PricingCard
-              plan="Basic"
-              price="Free"
-              features={[
-                '5 Departments',
-                'Manual Overrides',
-                'Standard Support'
-              ]}
-            />
-            <PricingCard
-              plan="Pro"
-              price="$49"
-              features={[
-                'Unlimited Departments',
-                'AI Rule Suggestions',
-                'Priority Generation',
-                'Advanced Validation'
-              ]}
-              featured
-            />
+            {/* Decorative background element */}
+            <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
           </div>
         </div>
+
+        {/* Right: Grid of Resource Tools */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {adminTools.map((tool, idx) => (
+            <Link 
+              key={idx} 
+              to={tool.path}
+              className="group bg-white p-6 rounded-[1.5rem] border border-slate-200 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex items-start gap-5"
+            >
+              <div className={`${tool.color} p-4 rounded-2xl group-hover:scale-110 transition-transform`}>
+                {tool.icon}
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 mb-1">{tool.title}</h3>
+                <p className="text-sm text-slate-500 leading-snug">{tool.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+      </div>
+
+      {/* Footer Quick Info */}
+      <section className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-slate-200 pt-10">
+        <div className="flex flex-col">
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Step 1</span>
+          <p className="text-slate-600 font-medium italic">Configure Faculty & Rooms</p>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Step 2</span>
+          <p className="text-slate-600 font-medium italic">Add Classes & Courses & Add metadata</p>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Step 3</span>
+          <p className="text-slate-600 font-medium italic">Run AI Generation</p>
+        </div>
       </section>
-
-      
-
     </div>
-  )
-}
+  );
+};
 
-const FeatureCard = ({ icon, title, description }) => (
-  <div className="p-8 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition duration-300">
-    <div className="mb-5">{icon}</div>
-    <h3 className="text-xl font-semibold mb-3">{title}</h3>
-    <p className="text-slate-600 leading-relaxed">{description}</p>
-  </div>
-)
-
-const PricingCard = ({ plan, price, features, featured = false }) => (
-  <div
-    className={`p-10 rounded-3xl border transition duration-300 ${
-      featured
-        ? 'border-indigo-600 bg-indigo-50 shadow-xl'
-        : 'border-slate-200 bg-white'
-    }`}
-  >
-    <h3 className="text-xl font-semibold mb-3">{plan}</h3>
-
-    <div className="text-4xl font-extrabold mb-8">
-      {price}
-      {price !== 'Free' && (
-        <span className="text-lg text-slate-400 font-normal"> /month</span>
-      )}
-    </div>
-
-    <ul className="space-y-4 text-left mb-8">
-      {features.map((feature, i) => (
-        <li key={i} className="flex items-center gap-3">
-          <CheckCircle size={18} className="text-indigo-600" />
-          {feature}
-        </li>
-      ))}
-    </ul>
-
-    <button
-      className={`w-full py-3 rounded-xl font-semibold transition ${
-        featured
-          ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-          : 'bg-slate-100 hover:bg-slate-200'
-      }`}
-    >
-      Choose {plan}
-    </button>
-  </div>
-)
-
-export default LandingPage
+export default Home;
