@@ -1,35 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { UserProvider, useUser } from './context/UserContext';
+import { authApi } from './api/authApi';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
-function App() {
-  const [count, setCount] = useState(0)
+function AppContent() {
+  const { user, setUser } = useUser();
+  const [appLoading, setAppLoading] = useState(true);
+  const location = useLocation();
+  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
+
+  // Persistence Logic: Check session on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await authApi.getCurrentUser();
+        if (res.data.user) {
+          setUser(res.data.user);
+        }
+      } catch (err) {
+        // No session found or expired - user remains null
+        console.log("No active session");
+      } finally {
+        setAppLoading(false);
+      }
+    };
+    checkAuth();
+  }, [setUser]);
+
+  // Show a clean loader while checking the session
+  if (appLoading) {
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-blue-900 font-medium">Loading your timetable...</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="flex flex-col min-h-screen">
+      {!isAuthPage && <Navbar />}
+      <main className={`flex-grow ${!isAuthPage ? 'pt-[70px]' : ''}`}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Routes>
+      </main>
+      {!isAuthPage && <Footer />}
+    </div>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <UserProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </UserProvider>
+  );
+}
