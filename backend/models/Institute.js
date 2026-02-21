@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import passportLocalMongoose from "passport-local-mongoose";
 
-const instituteSchema = new Schema({
+const instituteSchema = new mongoose.Schema({
   institute_name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true },
@@ -9,6 +9,11 @@ const instituteSchema = new Schema({
   department_name: { type: String, required: true }
 }, { timestamps: true });
 
-instituteSchema.plugin(passportLocalMongoose, { usernameField: "email" });
+// Normalize the plugin import for ES Modules
+const plugin = (typeof passportLocalMongoose === 'function') 
+  ? passportLocalMongoose 
+  : passportLocalMongoose.default;
+
+instituteSchema.plugin(plugin, { usernameField: "email" });
 
 export default mongoose.models.Institute || mongoose.model("Institute", instituteSchema);
