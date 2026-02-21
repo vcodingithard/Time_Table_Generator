@@ -1,8 +1,12 @@
 import api from './axiosInstance';
 
 export const timetableApi = {
-  generate: (data) => api.post('/api/timetable/generate', data),
-  getClasses: () => api.get('/api/classes'),
-  getCourses: () => api.get('/api/courses'),
-  search: (params) => api.get('/api/timetable/search', { params }),
+  // Class Methods
+  getClasses: () => api.get('/classes'),
+  createClass: (data) => api.post('/classes', data),
+  deleteClass: (id) => api.delete(`/classes/${id}`),
+
+  // Supporting Data
+  getRooms: () => api.get('/rooms'),
+  getFaculty: () => api.get('/faculty'),
 };
