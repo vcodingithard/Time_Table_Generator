@@ -10,7 +10,7 @@ router.use(isLoggedIn);
 router.post("/generate", ttCtrl.createTimetable);
 
 // GET /api/timetable/search -> Use query params like ?semester=5
-router.get("/search", ttCtrl.searchTimetables);
+router.get("/", ttCtrl.searchTimetables);
 
 // DELETE /api/timetable/:id
 router.delete("/:id", ttCtrl.deleteTimetable);
