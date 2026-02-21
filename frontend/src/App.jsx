@@ -11,6 +11,7 @@ import ManageClasses from './pages/ManageClasses';
 import ManageCourses from './pages/ManageCourses';
 import ManageFaculty from './pages/ManageFaculty';
 import ManageMetadata from './pages/ManageMetaData';
+import ManageRooms from './pages/ManageRoom';
 
 function AppContent() {
   const { user, setUser } = useUser();
@@ -58,6 +59,7 @@ function AppContent() {
           <Route path="/manage-courses" element={<ManageCourses />} />
           <Route path="/manage-faculty" element={<ManageFaculty />} />
           <Route path="/manage-metadata" element={<ManageMetadata />} />
+          <Route path="/manage-rooms" element={<ManageRooms />} />
         </Routes>
       </main>
       {!isAuthPage && <Footer />}
