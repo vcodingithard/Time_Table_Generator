@@ -3,7 +3,6 @@ import Institute from "../models/Institute.js";
 export const authService = {
   registerInstitute: async (data) => {
     const { institute_name, email, password, phone, address, department_name } = data;
-
     const newInstitute = new Institute({
       institute_name,
       email,

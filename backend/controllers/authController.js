@@ -3,8 +3,9 @@ import { authService } from "../services/authService.js";
 
 export const signup = async (req, res, next) => {
   try {
+
     const registeredInstitute = await authService.registerInstitute(req.body);
-    
+    console.log(req.body)
     // Automatically log in after signup
     await authService.loginUser(req, registeredInstitute);
     
@@ -21,7 +22,6 @@ export const signup = async (req, res, next) => {
 export const login = (req, res, next) => {
   passport.authenticate("local", async (err, user, info) => {
     if (err) return res.status(500).json({ success: false, error: err.message });
-
     if (!user) {
       return res.status(401).json({ 
         success: false, 
