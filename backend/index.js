@@ -13,7 +13,7 @@ import courseRoutes from "./routes/courseRoutes.js";
 import facultyRoutes from "./routes/facultyRoutes.js";
 import roomRoutes from "./routes/roomRoutes.js";
 import metadataRoutes from "./routes/metadataRoutes.js";
-// import timetableRoutes from "./routes/timetableRoutes.js";
+import timetableRoutes from "./routes/timetableRoutes.js";
 
 // --- Model Import for Passport ---
 import Institute from "./models/Institute.js";
@@ -95,7 +95,7 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/metadata", metadataRoutes);
-// app.use("/api/timetable", timetableRoutes);
+app.use("/api/timetable", timetableRoutes);
 
 // Health Check
 app.get("/", (req, res) => res.json({ status: "online", version: "1.0.0" }));
