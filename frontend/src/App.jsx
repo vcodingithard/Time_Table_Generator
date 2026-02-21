@@ -53,7 +53,8 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/manage-classes" element={<ManageClasses />} />
-           <Route path="/manage-courses" element={<ManageCourses />} />
+          <Route path="/manage-courses" element={<ManageCourses />} />
+          <Route path="/manage-faculty" element={<ManageCourses />} />
         </Routes>
       </main>
       {!isAuthPage && <Footer />}

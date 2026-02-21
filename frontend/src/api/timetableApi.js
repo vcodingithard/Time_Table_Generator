@@ -26,8 +26,4 @@ export const timetableApi = {
   updateRoom: (id, data) => api.put(`/rooms/${id}`, data),
   deleteRoom: (id) => api.delete(`/rooms/${id}`),
   
-  // --- Assignment/Timetable Methods ---
-  // If you have logic to assign faculty to courses
-  assignFaculty: (courseId, assignmentData) => 
-    api.post(`/courses/${courseId}/assign-faculty`, assignmentData),
 };
