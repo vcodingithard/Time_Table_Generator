@@ -25,5 +25,9 @@ export const timetableApi = {
   createRoom: (data) => api.post('/rooms', data),
   updateRoom: (id, data) => api.put(`/rooms/${id}`, data),
   deleteRoom: (id) => api.delete(`/rooms/${id}`),
-  
+
+  getMetadata: () => api.get('/metadata'),
+  upsertMetadata: (data) => api.post('/metadata', data),
+  deleteMetadata: (id) => api.delete(`/metadata/${id}`),
+
 };
