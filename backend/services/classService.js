@@ -1,6 +1,6 @@
 import Class from "../models/Class.js";
 import Metadata from "../models/Metadata.js";
-
+import Timetable from "../models/Timetable.js";
 export const classService = {
   createClass: async (instituteId, data) => {
     const { semester, section, room, coordinator } = data;
