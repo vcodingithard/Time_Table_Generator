@@ -1,12 +1,23 @@
 import { timetableService } from "../services/timetableService.js";
 
+// timetableController.js
 export const createTimetable = async (req, res) => {
   try {
     const { classId, suggestions } = req.body;
     const data = await timetableService.generateTimetable(req.user._id, classId, suggestions);
-    res.status(201).json({ success: true, data });
+    
+    res.status(201).json({ 
+      success: true, 
+      message: "Timetable created successfully", 
+      data 
+    });
   } catch (err) {
-    res.status(400).json({ success: false, message: err.message });
+    // If it's a "Duplicate" error, send 400. Otherwise, 500.
+    const isClientError = err.message.includes("exists") || err.message.includes("missing");
+    res.status(isClientError ? 400 : 500).json({ 
+      success: false, 
+      message: err.message 
+    });
   }
 };
 
