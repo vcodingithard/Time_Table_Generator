@@ -1,60 +1,66 @@
+// services/metadataService.js
+
 import Metadata from "../models/Metadata.js";
 
 export const metadataService = {
-  /**
-   * CREATE OR INITIALIZE METADATA
-   */
-  upsertMetadata: async (instituteId, data) => {
-    const { classId, slots_per_day, total_days, slot_times, breaks } = data;
 
-    // Use findOneAndUpdate with upsert: true to handle both create and update
-    const metadata = await Metadata.findOneAndUpdate(
-      { institute: instituteId, classId },
-      { 
-        $set: { 
-          slots_per_day: Number(slots_per_day),
-          total_days: Number(total_days) || 6,
-          slot_times,
-          breaks
-        } 
-      },
-      { new: true, upsert: true, runValidators: true }
-    );
+  // CREATE
+  async createMetadata(instituteId, data) {
+    const metadata = new Metadata({
+      institute: instituteId,
+      ...data
+    });
+
+    return await metadata.save();
+  },
+
+  // READ ALL
+  async getAllMetadata(instituteId) {
+    return await Metadata.find({ institute: instituteId })
+      .populate("classId", "semester section")
+      .sort({ createdAt: -1 });
+  },
+
+  // READ ONE
+  async getMetadataById(instituteId, id) {
+    const metadata = await Metadata.findOne({
+      _id: id,
+      institute: instituteId
+    }).populate("classId");
+
+    if (!metadata) {
+      throw new Error("Metadata not found");
+    }
 
     return metadata;
   },
 
-  /**
-   * GET ALL METADATA FOR INSTITUTE
-   */
-  getAllMetadata: async (instituteId) => {
-    return await Metadata.find({ institute: instituteId })
-      .populate({
-        path: "classId",
-        select: "semester section"
-      })
-      .sort({ updatedAt: -1 });
+  // UPDATE
+  async updateMetadata(instituteId, id, data) {
+    const updated = await Metadata.findOneAndUpdate(
+      { _id: id, institute: instituteId },
+      data,
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      throw new Error("Metadata not found");
+    }
+
+    return updated;
   },
 
-  /**
-   * GET METADATA FOR A SPECIFIC CLASS
-   */
-  getByClassId: async (instituteId, classId) => {
-    const meta = await Metadata.findOne({ institute: instituteId, classId })
-      .populate("classId");
-    if (!meta) throw new Error("Configuration not found for this class");
-    return meta;
-  },
-
-  /**
-   * DELETE METADATA
-   */
-  deleteMetadata: async (instituteId, metaId) => {
-    const deleted = await Metadata.findOneAndDelete({ 
-      _id: metaId, 
-      institute: instituteId 
+  // DELETE
+  async deleteMetadata(instituteId, id) {
+    const deleted = await Metadata.findOneAndDelete({
+      _id: id,
+      institute: instituteId
     });
-    if (!deleted) throw new Error("Metadata not found");
-    return { message: "Metadata deleted successfully" };
+
+    if (!deleted) {
+      throw new Error("Metadata not found");
+    }
+
+    return deleted;
   }
 };
