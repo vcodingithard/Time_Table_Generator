@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ManageClasses from './pages/ManageClasses';
+import ManageCourses from './pages/ManageCourses';
 
 function AppContent() {
   const { user, setUser } = useUser();
@@ -52,6 +53,7 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/manage-classes" element={<ManageClasses />} />
+           <Route path="/manage-courses" element={<ManageCourses />} />
         </Routes>
       </main>
       {!isAuthPage && <Footer />}
