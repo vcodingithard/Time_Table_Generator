@@ -96,7 +96,6 @@ app.use("/api/faculty", facultyRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/metadata", metadataRoutes);
 app.use("/api/timetable", timetableRoutes);
-
 // Health Check
 app.get("/", (req, res) => res.json({ status: "online", version: "1.0.0" }));
 

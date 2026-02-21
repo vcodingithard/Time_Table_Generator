@@ -7,8 +7,12 @@ import Room from "../models/Room.js";
 import { callAIModel } from "../utils/aiClient.js";
 
 export const timetableService = {
-  // CREATE (Generate)
+  /**
+   * GENERATE TIMETABLE
+   * Uses OpenRouter AI to generate a non-conflicting schedule
+   */
   generateTimetable: async (instituteId, classId, userSuggestions) => {
+    // 1. Fetch all necessary context in one parallel call
     const [targetClass, metadata, courses, faculties, rooms, existingTimetables] = 
       await Promise.all([
         Class.findById(classId),
@@ -19,9 +23,12 @@ export const timetableService = {
         Timetable.find({ institute: instituteId, classId: { $ne: classId } })
       ]);
 
-    if (!metadata) throw new Error("Metadata configuration missing for this class.");
+    // Validation
+    if (!targetClass) throw new Error(`Class with ID ${classId} not found.`);
+    if (!metadata) throw new Error("Metadata configuration (slots/times) missing for this class.");
+    if (courses.length === 0) throw new Error("No courses found linked to this class.");
 
-    // Extract conflicts to prevent AI from double-booking faculty/rooms
+    // 2. Build Conflict Matrix (Busy Slots for Rooms & Faculty)
     const occupiedSlots = existingTimetables.flatMap(tt => 
       Object.entries(tt.timetable).flatMap(([day, sessions]) => 
         sessions.map(s => ({
@@ -33,28 +40,40 @@ export const timetableService = {
       )
     );
 
+    // 3. Prepare the AI Prompt
     const prompt = `
       Act as a University Scheduling Algorithm for Class ${targetClass.semester}-${targetClass.section}.
-      Data: Slots/Day: ${metadata.slots_per_day}. Breaks: ${JSON.stringify(metadata.breaks)}.
-      Forbidden Slots (Already occupied in other classes): ${JSON.stringify(occupiedSlots)}
-      Resources: 
-      - Rooms: ${JSON.stringify(rooms.map(r => ({id: r._id, no: r.room_no, type: r.room_type})))}
-      - Courses: ${JSON.stringify(courses.map(c => ({id: c._id, name: c.course_name, hrs: c.hours_per_week, type: c.course_type})))}
+      
+      CONSTRAINTS:
+      - Slots per day: ${metadata.slots_per_day}.
+      - Breaks (DO NOT SCHEDULE HERE): ${JSON.stringify(metadata.breaks)}.
+      - Already Occupied Slots (Forbidden): ${JSON.stringify(occupiedSlots)}.
+      
+      RESOURCES:
+      - Available Rooms: ${JSON.stringify(rooms.map(r => ({id: r._id, no: r.room_no, type: r.room_type})))}
+      - Courses to Schedule: ${JSON.stringify(courses.map(c => ({id: c._id, name: c.course_name, hrs: c.hours_per_week, type: c.course_type})))}
       - Faculty: ${JSON.stringify(faculties.map(f => ({id: f._id, name: f.faculty_name})))}
-      User Suggestions: ${userSuggestions}
+      - User Suggestions: ${userSuggestions}
 
-      Output JSON format:
+      OUTPUT RULES:
+      - Return ONLY a valid JSON.
+      - Map each day (MONDAY to SATURDAY).
+      - Ensure activity matches Course Type (LECTURE/LAB).
+      
+      JSON FORMAT:
       {
         "timetable": {
           "MONDAY": [{"course": "ID", "faculty": "ID", "room": "ID", "slot_index": 0, "activity": "LECTURE"}],
-          ... (for all days)
+          "TUESDAY": [],
+          ...
         }
       }
     `;
 
+    // 4. Call AI Helper (OpenRouter)
     const aiResponse = await callAIModel(prompt);
 
-    // Save using your schema structure
+    // 5. Update or Create Timetable in DB
     return await Timetable.findOneAndUpdate(
       { institute: instituteId, classId },
       {
@@ -63,16 +82,24 @@ export const timetableService = {
         display_info: {
           semester: targetClass.semester,
           section: targetClass.section,
-          department: targetClass.department_name
+          department: targetClass.department_name || targetClass.department
         },
         timetable: aiResponse.timetable,
-        faculty_involved: [...new Set(Object.values(aiResponse.timetable).flat().map(s => s.faculty))]
+        faculty_involved: [...new Set(
+          Object.values(aiResponse.timetable)
+            .flat()
+            .filter(s => s.faculty)
+            .map(s => s.faculty)
+        )]
       },
       { upsert: true, new: true }
     );
   },
 
-  // SEARCH / FETCH
+  /**
+   * SEARCH TIMETABLES
+   * Filter by semester, section, or faculty
+   */
   searchTimetables: async (instituteId, filters) => {
     const query = { institute: instituteId };
     
@@ -80,17 +107,26 @@ export const timetableService = {
     if (filters.section) query["display_info.section"] = filters.section;
     if (filters.facultyId) query.faculty_involved = filters.facultyId;
 
+    // Helper to populate all days
+    const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    let populateQuery = days.map(day => ([
+      { path: `timetable.${day}.course` },
+      { path: `timetable.${day}.faculty` },
+      { path: `timetable.${day}.room` }
+    ])).flat();
+
     return await Timetable.find(query)
       .populate("classId")
-      .populate("timetable.MONDAY.course timetable.MONDAY.faculty timetable.MONDAY.room")
-      // Add other days population here if needed or handle on frontend
+      .populate(populateQuery)
       .sort({ updatedAt: -1 });
   },
 
-  // DELETE
+  /**
+   * DELETE TIMETABLE
+   */
   deleteTimetable: async (instituteId, id) => {
     const deleted = await Timetable.findOneAndDelete({ _id: id, institute: instituteId });
-    if (!deleted) throw new Error("Timetable not found");
+    if (!deleted) throw new Error("Timetable not found or unauthorized.");
     return deleted;
   }
 };
