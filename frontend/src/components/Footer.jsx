@@ -49,7 +49,7 @@ const Footer = () => {
               <h3 className="text-slate-900 font-bold text-sm uppercase tracking-wider">Professional Profiles</h3>
               <div className="flex gap-4">
                 <a 
-                  href="https://linkedin.com/in/vivek-shenoy" 
+                  href="https://www.linkedin.com/in/vivek-shenoy-55b20b319/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="bg-slate-900 text-white p-3 rounded-xl hover:bg-blue-600 transition-all transform hover:-translate-y-1 shadow-lg shadow-slate-200"
