@@ -42,5 +42,26 @@ export const paymentController = {
       console.error("Webhook Processing Failed:", err);
       res.status(500).send("Internal Error");
     }
+  },
+  getPlans: async (req, res) => {
+    try {
+      const plans = await paymentService.getAllPlans();
+      res.status(200).json({ status: "success", data: plans });
+    } catch (err) {
+      res.status(500).json({ status: "error", message: err.message });
+    }
+  },
+
+  // GET /api/payment/my-subscription
+  getMySubscription: async (req, res) => {
+    try {
+      const sub = await paymentService.getSubscriptionByInstitute(req.user._id);
+      console.log("i am calling")
+      if (!sub) return res.status(404).json({ message: "No subscription found" });
+      
+      res.status(200).json({ status: "success", data: sub });
+    } catch (err) {
+      res.status(500).json({ status: "error", message: err.message });
+    }
   }
 };

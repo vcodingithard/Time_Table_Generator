@@ -16,4 +16,9 @@ router.get("/verify-status", isLoggedIn, paymentController.verifyPayment);
 // 3. Webhook (No 'isLoggedIn' middleware here as it's called by Cashfree)
 router.post("/webhook", rawBodyMiddleware, paymentController.webhookHandler);
 
+router.get("/plans", paymentController.getPlans);
+
+// 2. Fetch current logged-in user's subscription status
+router.get("/my-subscription", isLoggedIn , paymentController.getMySubscription);
+
 export default router;

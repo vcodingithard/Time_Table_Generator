@@ -125,5 +125,18 @@ export const paymentService = {
     } finally {
       session.endSession();
     }
-  }
+  },
+  getAllPlans: async () => {
+    // We sort by price so they appear in order (FREE -> PRO -> ENTERPRISE)
+    return await Plan.find({}).sort({ price: 1 });
+  },
+
+  /**
+   * GET CURRENT SUBSCRIPTION: To show usage on the dashboard
+   */
+  getSubscriptionByInstitute: async (instituteId) => {
+    return await Subscription.findOne({ institute: instituteId })
+      .populate("plan")
+      .lean();
+  },
 };
