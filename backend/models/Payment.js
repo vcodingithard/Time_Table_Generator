@@ -1,38 +1,13 @@
 import mongoose from "mongoose";
-const { Schema } = mongoose;
 
-const paymentSchema = new Schema({
-  institute: {
-    type: Schema.ObjectId,
-    ref: "Institute",
-    required: true
-  },
-
-  subscription: {
-    type: Schema.ObjectId,
-    ref: "Subscription"
-  },
-
-  order_id: { type: String, required: true },
-  payment_id: { type: String },
-
+const paymentSchema = new mongoose.Schema({
+  institute: { type: mongoose.Schema.Types.ObjectId, ref: "Institute", required: true },
+  planId: { type: mongoose.Schema.Types.ObjectId, ref: "Plan" },
+  order_id: { type: String, required: true, unique: true },
+  cf_order_id: { type: String }, // Cashfree's internal ID
   amount: { type: Number, required: true },
-
-  currency: { type: String, default: "INR" },
-
-  status: {
-    type: String,
-    enum: ["CREATED", "SUCCESS", "FAILED"],
-    default: "CREATED"
-  },
-
-  payment_gateway: {
-    type: String,
-    default: "CASHFREE"
-  }
-
+  status: { type: String, enum: ["CREATED", "SUCCESS", "FAILED"], default: "CREATED" },
+  payment_session_id: { type: String } // Needed for Frontend SDK
 }, { timestamps: true });
 
-paymentSchema.index({ order_id: 1 }, { unique: true });
-
-export default mongoose.models.Payment || mongoose.model("Payment", paymentSchema);
+export default mongoose.models.Payment || mongoose.model("Payment", paymentSchema); 
