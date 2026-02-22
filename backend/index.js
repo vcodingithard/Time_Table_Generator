@@ -14,7 +14,7 @@ import facultyRoutes from "./routes/facultyRoutes.js";
 import roomRoutes from "./routes/roomRoutes.js";
 import metadataRoutes from "./routes/metadataRoutes.js";
 import timetableRoutes from "./routes/timetableRoutes.js";
-
+import paymentRoutes from "./routes/paymentRoutes.js"
 // --- Model Import for Passport ---
 import Institute from "./models/Institute.js";
 
@@ -35,7 +35,13 @@ mongoose
 // MIDDLEWARES
 // --------------------------------
 app.set("trust proxy", 1);
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    if (req.originalUrl.includes("/webhook")) {
+      req.rawBody = buf.toString();
+    }
+  }
+}))
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
@@ -96,6 +102,7 @@ app.use("/api/faculty", facultyRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/metadata", metadataRoutes);
 app.use("/api/timetable", timetableRoutes);
+app.use("/api/payment", paymentRoutes);
 // Health Check
 app.get("/", (req, res) => res.json({ status: "online", version: "1.0.0" }));
 
