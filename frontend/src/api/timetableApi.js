@@ -54,8 +54,8 @@ createPaymentOrder: (data) => api.post('/payment/checkout', data),
   /**
    * @param {string} orderId - The Order ID returned by Cashfree
    */
-verifyPaymentStatus: (orderId) => 
-    api.get(`/payment/verify-status?order_id=${orderId}`),
+verifyPaymentStatus: (orderId) =>
+  api.get(`/payment/verify-status?order_id=${orderId}`),
     
 getAvailablePlans: () => api.get('/payment/plans'),
 };

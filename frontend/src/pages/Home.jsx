@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Users, BookOpen, School, Settings, MapPin, 
-  Sparkles, ArrowRight, Check, Zap, Crown, ShieldCheck 
+import {
+  Users, BookOpen, School, Settings, MapPin,
+  Sparkles, ArrowRight, Check, Zap, Crown, ShieldCheck
 } from 'lucide-react';
 import { timetableApi } from '../api/timetableApi';
 import { load } from "@cashfreepayments/cashfree-js";
@@ -11,7 +11,7 @@ const Home = () => {
   const [plans, setPlans] = useState([]);
   const [mySub, setMySub] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [processing, setProcessing] = useState(false);
   // 1. Load Data on Mount
   useEffect(() => {
     const loadData = async () => {
@@ -41,35 +41,41 @@ const Home = () => {
   }, []);
 
   // 2. Handle Payment Redirection
-const handleUpgrade = async (planId) => {
-  try {
-    // Pass the object directly
-    const response = await timetableApi.createPaymentOrder({ planId });
-    const cashfree = await load({ mode: "sandbox" });
+  const handleUpgrade = async (planId) => {
+    if (processing) return;
+    setProcessing(true);
 
-    console.log(planId)
-    console.log(response)
-    const { payment_session_id } = response.data.data;
-    
-    // Redirect to Cashfree Sandbox
-    cashfree.checkout({
-  paymentSessionId: payment_session_id,
-  redirectTarget: "_self"
-});
-  } catch (err) {
-    console.error("Payment initiation failed:", err);
-    alert(err.response?.data?.message || "Payment failed to start.");
-  }
-};
+    try {
+      const response = await timetableApi.createPaymentOrder({ planId });
+
+      const cashfree = await load({
+        mode: import.meta.env.VITE_NODE_ENV === "production"
+          ? "production"
+          : "sandbox"
+      });
+
+      const { payment_session_id } = response.data.data;
+
+      await cashfree.checkout({
+        paymentSessionId: payment_session_id,
+        redirectTarget: "_self"
+      });
+
+    } catch (err) {
+      alert("Payment failed to start.");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   // Helper: Dynamic Styles for Plans
   const getPlanStyles = (name) => {
     switch (name?.toUpperCase()) {
-      case 'PRO': 
+      case 'PRO':
         return { icon: <Crown className="w-5 h-5 text-amber-500" />, color: "border-blue-500 shadow-lg shadow-blue-500/10" };
-      case 'ENTERPRISE': 
+      case 'ENTERPRISE':
         return { icon: <ShieldCheck className="w-5 h-5 text-indigo-600" />, color: "border-slate-200" };
-      default: 
+      default:
         return { icon: <Zap className="w-5 h-5 text-slate-500" />, color: "border-slate-200" };
     }
   };
@@ -114,7 +120,7 @@ const handleUpgrade = async (planId) => {
           </div>
           <div className="w-24 h-3 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className={`h-full transition-all duration-1000 ${ (callsUsed/callLimit) > 0.8 ? 'bg-amber-500' : 'bg-blue-600'}`}
+              className={`h-full transition-all duration-1000 ${(callsUsed / callLimit) > 0.8 ? 'bg-amber-500' : 'bg-blue-600'}`}
               style={{ width: `${callLimit > 0 ? Math.min((callsUsed / callLimit) * 100, 100) : 0}%` }}
             ></div>
           </div>
@@ -194,7 +200,7 @@ const handleUpgrade = async (planId) => {
                   className={`w-full py-4 rounded-2xl font-black transition-all ${isCurrent
                     ? "bg-slate-100 text-slate-400 cursor-default"
                     : "bg-slate-900 text-white hover:bg-blue-600 active:scale-95 shadow-lg shadow-slate-200"
-                  }`}
+                    }`}
                 >
                   {isCurrent ? "Active Plan" : "Upgrade Now"}
                 </button>
