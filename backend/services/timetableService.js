@@ -6,6 +6,7 @@ import Faculty from "../models/Faculty.js";
 import Room from "../models/Room.js";
 import { callAIModel } from "../utils/aiClient.js";
 import mongoose from "mongoose";
+import Subscription from "../models/Subscription.js";
 
 export const timetableService = {
   /**
@@ -13,14 +14,14 @@ export const timetableService = {
    * Creates a brand new timetable or throws an error if one exists.
    */
   generateTimetable: async (instituteId, classId, userSuggestions) => {
-    // 1. Idempotency Check: Prevent duplicates
+    // 1. Idempotency Check: Prevent duplicate timetables for the same class
     const existing = await Timetable.findOne({ institute: instituteId, classId });
     if (existing) {
       throw new Error("A timetable already exists for this class. Please delete it before generating a new one.");
     }
 
-    // 2. Data Fetching
-    const [targetClass, metadata, courses, faculties, rooms, existingTimetables] = 
+    // 2. Data Fetching: Gather all necessary context for the AI
+    const [targetClass, metadata, courses, faculties, rooms, existingTimetables] =
       await Promise.all([
         Class.findById(classId),
         Metadata.findOne({ institute: instituteId, classId }),
@@ -34,7 +35,7 @@ export const timetableService = {
     if (!metadata) throw new Error("Class metadata (slots/breaks) is missing.");
     if (courses.length === 0) throw new Error("No courses assigned to this class.");
 
-    // 3. Busy Slots (Conflict Matrix)
+    // 3. Busy Slots (Conflict Matrix): Identify when faculties or rooms are already taken
     const occupiedSlots = existingTimetables.flatMap(tt =>
       Object.entries(tt.timetable).flatMap(([day, sessions]) =>
         sessions.map(s => ({
@@ -87,7 +88,6 @@ export const timetableService = {
         const daySlots = aiResponse.timetable[day] || [];
         cleanTimetable[day] = daySlots
           .map(slot => {
-            // Validate if AI returned valid 24-char hex strings
             const isCourseValid = mongoose.Types.ObjectId.isValid(slot.course);
             const isFacultyValid = mongoose.Types.ObjectId.isValid(slot.faculty);
             const isRoomValid = mongoose.Types.ObjectId.isValid(slot.room);
@@ -105,14 +105,18 @@ export const timetableService = {
               activity: slot.activity || "LECTURE"
             };
           })
-          .filter(slot => slot !== null); // Remove failed mappings
+          .filter(slot => slot !== null);
       });
     } catch (err) {
       throw new Error("Data transformation failed. AI output format was unexpected.");
     }
 
-    // 7. Final Database Save
+    // 7. FINAL SAVE WITH TRANSACTION: Atomic update of Timetable and Subscription
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
+      // Create new Timetable document
       const newTimetable = new Timetable({
         institute: instituteId,
         classId,
@@ -129,12 +133,30 @@ export const timetableService = {
         )]
       });
 
-      return await newTimetable.save();
+      const savedResult = await newTimetable.save({ session });
+
+      // Increment the calls_used in the Subscription
+      const subUpdate = await Subscription.findOneAndUpdate(
+        { institute: instituteId },
+        { $inc: { calls_used: 1 } },
+        { session, new: true }
+      );
+
+      if (!subUpdate) {
+        throw new Error("Subscription record not found during update.");
+      }
+
+      await session.commitTransaction();
+      return savedResult;
+
     } catch (dbErr) {
-      throw new Error(`Database Save Error: ${dbErr.message}`);
+      // Rollback both the timetable save and the subscription increment if either fails
+      await session.abortTransaction();
+      throw new Error(`Database Error: ${dbErr.message}`);
+    } finally {
+      session.endSession();
     }
   },
-
   /**
    * SEARCH TIMETABLES
    */
