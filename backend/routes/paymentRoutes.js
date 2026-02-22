@@ -14,7 +14,8 @@ router.post("/checkout", isLoggedIn, paymentController.initiatePayment);
 router.get("/verify-status", isLoggedIn, paymentController.verifyPayment);
 
 // 3. Webhook (No 'isLoggedIn' middleware here as it's called by Cashfree)
-router.post("/webhook", rawBodyMiddleware, paymentController.webhookHandler);
+
+router.post("/webhook", paymentController.webhookHandler);
 
 router.get("/plans", paymentController.getPlans);
 

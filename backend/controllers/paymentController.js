@@ -16,7 +16,7 @@ export const paymentController = {
       }
 
       const order = await paymentService.createOrder(instituteId, finalPlanId);
-      
+
       console.log("Order Created Successfully:", order.order_id);
       res.status(201).json({ status: "success", data: order });
     } catch (err) {
@@ -29,46 +29,45 @@ export const paymentController = {
       console.log("--- END: Initiate Payment ---");
     }
   },
-
-  verifyPayment: async (req, res) => {
-    const { order_id } = req.query;
-    console.log(`--- Verification Check: ${order_id} ---`);
-    try {
-      const result = await paymentService.checkPaymentStatus(order_id);
-      console.log(`Status Result for ${order_id}:`, result.order_status);
-      res.status(200).json({ status: "success", payment_status: result.order_status });
-    } catch (err) {
-      console.error(`Verification Error (${order_id}):`, err.message);
-      res.status(500).json({ status: "error", message: err.message });
-    }
-  },
-
-  webhookHandler: async (req, res) => {
-    console.log("--- INCOMING WEBHOOK ---");
+  // In paymentController.js
+webhookHandler: async (req, res) => {
     const signature = req.headers["x-webhook-signature"];
-    const timestamp = req.headers["x-webhook-timestamp"];
+    const timestamp = req.headers["x-webhook-timestamp"]; // Capture this header
+    const rawBody = req.rawBody; 
 
     try {
-      const isAuthentic = paymentService.verifyWebhook(req.rawBody, signature, timestamp);
-      
-      if (!isAuthentic) {
-        console.error("WEBHOOK AUTH FAILED: Invalid Signature");
-        return res.status(401).send("Invalid Signature");
-      }
+        if (!rawBody || !signature || !timestamp) {
+            console.error("Missing Webhook components");
+            return res.status(400).send("Bad Request");
+        }
 
-      const event = JSON.parse(req.rawBody);
-      console.log("Webhook Event Type:", event.type);
-      console.log("Webhook Data:", JSON.stringify(event.data, null, 2));
+        // Pass the timestamp here
+        const isValid = paymentService.verifyWebhook(rawBody, signature, timestamp);
 
-      if (event.type === "PAYMENT_SUCCESS_WEBHOOK") {
-        console.log("Triggering Fulfillment for:", event.data.order.order_id);
-        await paymentService.fulfillSubscription(event.data.order.order_id);
-      }
+        if (!isValid) {
+            console.warn("❌ Invalid Webhook Signature!");
+            return res.status(401).send("Invalid Signature");
+        }
 
-      res.status(200).send("OK");
+        const event = JSON.parse(rawBody);
+        await paymentService.processWebhook(event);
+
+        res.status(200).send("OK");
     } catch (err) {
-      console.error("Webhook Execution Crash:", err);
-      res.status(500).send("Internal Error");
+        console.error("Webhook Error:", err.message);
+        res.status(500).send("Internal Error");
+    }
+},
+  verifyPayment: async (req, res) => {
+    try {
+      const { order_id } = req.query;
+
+      const status = await paymentService.getPaymentStatus(order_id);
+
+      res.json({ status });
+
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
   },
   getPlans: async (req, res) => {
@@ -86,7 +85,7 @@ export const paymentController = {
       const sub = await paymentService.getSubscriptionByInstitute(req.user._id);
       console.log("i am calling")
       if (!sub) return res.status(404).json({ message: "No subscription found" });
-      
+
       res.status(200).json({ status: "success", data: sub });
     } catch (err) {
       res.status(500).json({ status: "error", message: err.message });
