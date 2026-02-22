@@ -5,6 +5,7 @@ import {
   Sparkles, ArrowRight, Check, Zap, Crown, ShieldCheck 
 } from 'lucide-react';
 import { timetableApi } from '../api/timetableApi';
+import { load } from "@cashfreepayments/cashfree-js";
 
 const Home = () => {
   const [plans, setPlans] = useState([]);
@@ -15,12 +16,21 @@ const Home = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [plansRes, subRes] = await Promise.all([
+        // Fetch plans and subscription status
+        const [plansRes, subRes] = await Promise.allSettled([
           timetableApi.getAvailablePlans(),
           timetableApi.getSubscriptionStatus()
         ]);
-        setPlans(plansRes.data.data);
-        setMySub(subRes.data.data);
+
+        if (plansRes.status === 'fulfilled') {
+          setPlans(plansRes.value.data.data);
+        }
+
+        if (subRes.status === 'fulfilled') {
+          setMySub(subRes.value.data.data);
+        } else {
+          console.warn("Subscription not found or user not logged in");
+        }
       } catch (err) {
         console.error("Error loading dashboard data:", err);
       } finally {
@@ -31,28 +41,26 @@ const Home = () => {
   }, []);
 
   // 2. Handle Payment Redirection
-  const handleUpgrade = async (planId) => {
-    try {
-      // In a real app, pull these from your Auth Context/State
-      const customerDetails = {
-        customer_phone: "9999999999", 
-        customer_email: "institute@example.com"
-      };
+const handleUpgrade = async (planId) => {
+  try {
+    // Pass the object directly
+    const response = await timetableApi.createPaymentOrder({ planId });
+    const cashfree = await load({ mode: "sandbox" });
 
-      const response = await timetableApi.createPaymentOrder(planId, customerDetails);
-      
-      // Extract the payment session ID from backend response
-      const { payment_session_id } = response.data.data;
-
-      // Redirect to Cashfree Hosted Checkout Page
-      // Note: For 'Seamless' SDK (modal), you'd use the Cashfree SDK library instead
-      window.location.href = `https://payments.cashfree.com/checkout/v1/pages/${payment_session_id}`;
-      
-    } catch (err) {
-      console.error("Payment initiation failed:", err);
-      alert(err.response?.data?.message || "Could not initiate payment. Please try again.");
-    }
-  };
+    console.log(planId)
+    console.log(response)
+    const { payment_session_id } = response.data.data;
+    
+    // Redirect to Cashfree Sandbox
+    cashfree.checkout({
+  paymentSessionId: payment_session_id,
+  redirectTarget: "_self"
+});
+  } catch (err) {
+    console.error("Payment initiation failed:", err);
+    alert(err.response?.data?.message || "Payment failed to start.");
+  }
+};
 
   // Helper: Dynamic Styles for Plans
   const getPlanStyles = (name) => {
@@ -87,7 +95,7 @@ const Home = () => {
 
   // Safe Data Extraction
   const callsUsed = mySub?.calls_used || 0;
-  const callLimit = mySub?.plan?.call_limit || 1;
+  const callLimit = mySub?.plan?.call_limit || 0;
   const currentPlanId = mySub?.plan?._id;
 
   return (
@@ -102,12 +110,12 @@ const Home = () => {
         <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
           <div className="text-right">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Credits</p>
-            <p className="text-sm font-black text-slate-900">{callsUsed} / {callLimit} Used</p>
+            <p className="text-sm font-black text-slate-900">{callsUsed} / {callLimit || '∞'} Used</p>
           </div>
           <div className="w-24 h-3 bg-slate-100 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-1000 ${ (callsUsed/callLimit) > 0.8 ? 'bg-amber-500' : 'bg-blue-600'}`}
-              style={{ width: `${Math.min((callsUsed / callLimit) * 100, 100)}%` }}
+              style={{ width: `${callLimit > 0 ? Math.min((callsUsed / callLimit) * 100, 100) : 0}%` }}
             ></div>
           </div>
         </div>

@@ -13,6 +13,7 @@ import ManageFaculty from './pages/ManageFaculty';
 import ManageMetadata from './pages/ManageMetaData';
 import ManageRooms from './pages/ManageRoom';
 import GenerateTimetable from './pages/GenerateTimeTablePage';
+import PaymentStatus from './pages/PaymentStatus';
 
 function AppContent() {
   const { user, setUser } = useUser();
@@ -61,8 +62,9 @@ function AppContent() {
           <Route path="/manage-faculty" element={<ManageFaculty />} />
           <Route path="/manage-metadata" element={<ManageMetadata />} />
           <Route path="/manage-rooms" element={<ManageRooms />} />
-          <Route path="/generate-timetable" element={<GenerateTimetable />} />
-        </Routes>
+          <Route path="/generate-timetable" element={<GenerateTimetable />} />        
+          <Route path="/payment-status" element={<PaymentStatus />} />
+          </Routes>
       </main>
       {!isAuthPage && <Footer />}
     </div>

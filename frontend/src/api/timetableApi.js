@@ -49,8 +49,7 @@ getSubscriptionStatus: () => api.get('/payment/my-subscription'),
    * @param {string} planId - The MongoDB ID of the Plan (PRO/ENTERPRISE)
    * @param {object} customerDetails - { phone, email }
    */
-createPaymentOrder: (planId, customerDetails) => 
-    api.post('/payment/checkout', { planId, ...customerDetails }),
+createPaymentOrder: (data) => api.post('/payment/checkout', data),
 
   /**
    * @param {string} orderId - The Order ID returned by Cashfree
