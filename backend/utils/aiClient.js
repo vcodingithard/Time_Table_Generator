@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const MODELS = [
-  "openrouter/auto", // Let OpenRouter pick the best available free model
+  "openrouter/auto",
   "meta-llama/llama-3.1-8b-instruct:free",
   "deepseek/deepseek-r1-distill-llama-70b:free",
   "microsoft/phi-3-mini-128k-instruct:free"
@@ -29,7 +29,7 @@ export const callAIModel = async (prompt) => {
         {
           headers: {
             Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            "HTTP-Referer": "http://localhost:3000"||"",
+            "HTTP-Referer": process.env.APP_URL,
             "X-Title": "Timetable Generator",
             "Content-Type": "application/json"
           },

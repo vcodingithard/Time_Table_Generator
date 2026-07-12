@@ -49,7 +49,7 @@ app.use(
     origin: (origin, callback) => {
       const allowedOrigins = [
         "http://localhost:5173",
-        "https://mini-project-lilac-ten.vercel.app",
+        "https://time-table-generator-hazel.vercel.app/",
       ];
       if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
         return callback(null, true);
@@ -74,9 +74,9 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 14,
-      sameSite: "lax",
-      secure: false,
+      secure: true,
+      sameSite: "none",
+      maxAge: 1000 * 60 * 60 * 24 * 14
     },
   })
 );
@@ -88,7 +88,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // passport-local-mongoose simplifies this significantly
-passport.use(Institute.createStrategy()); 
+passport.use(Institute.createStrategy());
 passport.serializeUser(Institute.serializeUser());
 passport.deserializeUser(Institute.deserializeUser());
 
