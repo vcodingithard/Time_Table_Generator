@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { timetableApi } from "../api/timetableApi";
+import { useToast } from "../context/ToastContext";
 
 const ManageCourses = () => {
   const [courses, setCourses] = useState([]);
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
+  const { addToast } = useToast();
 
   const initialFormState = {
     course_code: '',
@@ -74,8 +76,9 @@ const ManageCourses = () => {
         setCourses(prev => [...prev, res.data.data]);
       }
       setFormData(initialFormState);
+      addToast(editingId ? "Course updated successfully." : "Course added successfully.", "success");
     } catch (err) {
-      alert(err.response?.data?.message || "Operation failed");
+      addToast(err.response?.data?.message || "Operation failed", "error");
     }
   };
 
@@ -96,8 +99,9 @@ const ManageCourses = () => {
     try {
       await timetableApi.deleteCourse(id);
       setCourses(courses.filter(c => c._id !== id));
+      addToast("Course deleted.", "success");
     } catch (err) {
-      alert("Error deleting course");
+      addToast("Error deleting course", "error");
     }
   };
 

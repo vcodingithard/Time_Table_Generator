@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { timetableApi } from "../api/timetableApi";
+import { useToast } from "../context/ToastContext";
 
 const GenerateTimetable = () => {
   const [classes, setClasses] = useState([]);
@@ -8,6 +9,7 @@ const GenerateTimetable = () => {
   const [suggestions, setSuggestions] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatedData, setGeneratedData] = useState(null);
+  const { addToast } = useToast();
 
   const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 
@@ -16,7 +18,10 @@ const GenerateTimetable = () => {
   }, []);
 
   const handleGenerate = async () => {
-    if (!selectedClass) return alert("Please select a class first!");
+    if (!selectedClass) {
+      addToast("Please select a class first.", "info");
+      return;
+    }
     
     setLoading(true);
     try {
@@ -31,6 +36,7 @@ const GenerateTimetable = () => {
       });
 
       setGeneratedData(searchRes.data.data[0]);
+      addToast("Timetable generated successfully.", "success");
     } catch (err) {
       // 3. Robust Error Handling for the new service logic
       const errMsg = err.response?.data?.message || "Generation failed";
@@ -49,7 +55,7 @@ const GenerateTimetable = () => {
             setGeneratedData(existingRes.data.data[0]);
         }
       } else {
-        alert(`Error: ${errMsg}`);
+        addToast(errMsg, "error");
       }
     } finally {
       setLoading(false);
@@ -62,9 +68,9 @@ const GenerateTimetable = () => {
     try {
       await timetableApi.deleteTimetable(generatedData._id);
       setGeneratedData(null);
-      alert("Timetable removed. You can now generate a new one.");
+      addToast("Timetable removed. You can generate a fresh one now.", "success");
     } catch (err) {
-      alert("Delete failed.");
+      addToast("Delete failed. Please try again.", "error");
     }
   };
 

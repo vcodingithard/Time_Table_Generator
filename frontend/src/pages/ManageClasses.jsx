@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { timetableApi } from "../api/timetableApi";
+import { useToast } from "../context/ToastContext";
 
 const ManageClasses = () => {
   const [classes, setClasses] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [faculty, setFaculty] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
 
   // Form state
   const [form, setForm] = useState({
@@ -42,7 +44,7 @@ const ManageClasses = () => {
   const handleAddClass = async (e) => {
     e.preventDefault();
     if (!form.semester || !form.section || !form.room || !form.coordinator) {
-      alert("Please fill all fields");
+      addToast("Please fill all fields before creating a class.", "info");
       return;
     }
 
@@ -56,8 +58,9 @@ const ManageClasses = () => {
       setForm({ semester: "", section: "", room: "", coordinator: "" });
       const res = await timetableApi.getClasses();
       setClasses(res.data.data || []);
+      addToast("Class created successfully.", "success");
     } catch (err) {
-      alert(err.response?.data?.message || "Error saving class");
+      addToast(err.response?.data?.message || "Error saving class", "error");
     }
   };
 
@@ -66,8 +69,9 @@ const ManageClasses = () => {
     try {
       await timetableApi.deleteClass(id);
       setClasses(classes.filter((c) => c._id !== id));
+      addToast("Class removed.", "success");
     } catch (err) {
-      alert("Error deleting class");
+      addToast("Error deleting class", "error");
     }
   };
 

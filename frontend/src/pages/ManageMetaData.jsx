@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { timetableApi } from "../api/timetableApi";
+import { useToast } from "../context/ToastContext";
 
 const ManageMetadata = () => {
   const [metadataList, setMetadataList] = useState([]);
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editId, setEditId] = useState(null);
+  const { addToast } = useToast();
 
   const initialForm = {
     classId: "",
@@ -83,9 +85,9 @@ const ManageMetadata = () => {
       setFormData(initialForm);
       setEditId(null);
 
-      alert(editId ? "Configuration Updated!" : "Configuration Created!");
+      addToast(editId ? "Configuration updated." : "Configuration created.", "success");
     } catch (err) {
-      alert(err.response?.data?.message || "Error saving metadata");
+      addToast(err.response?.data?.message || "Error saving metadata", "error");
     }
   };
 
@@ -110,8 +112,9 @@ const ManageMetadata = () => {
     try {
       await timetableApi.deleteMetadata(id);
       setMetadataList(prev => prev.filter(m => m._id !== id));
+      addToast("Configuration removed.", "success");
     } catch (err) {
-      alert(err.response?.data?.message || "Delete failed");
+      addToast(err.response?.data?.message || "Delete failed", "error");
     }
   };
 
