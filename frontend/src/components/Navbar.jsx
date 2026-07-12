@@ -29,6 +29,7 @@ const Navbar = () => {
 
   // Management links nested in a dropdown
   const manageLinks = [
+    { name: 'View Timetables', path: '/view-timetables', icon: <Calendar className="w-4 h-4" /> },
     { name: 'Classes', path: '/manage-classes' },
     { name: 'Courses', path: '/manage-courses' },
     { name: 'Faculty', path: '/manage-faculty' },

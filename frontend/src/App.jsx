@@ -14,7 +14,7 @@ import ManageMetadata from './pages/ManageMetaData';
 import ManageRooms from './pages/ManageRoom';
 import GenerateTimetable from './pages/GenerateTimeTablePage';
 import PaymentStatus from './pages/PaymentStatus';
-
+import ViewTimetables from './pages/ViewTimetablesPage';
 function AppContent() {
   const { user, setUser } = useUser();
   const [appLoading, setAppLoading] = useState(true);
@@ -62,6 +62,7 @@ function AppContent() {
           <Route path="/manage-faculty" element={<ManageFaculty />} />
           <Route path="/manage-metadata" element={<ManageMetadata />} />
           <Route path="/manage-rooms" element={<ManageRooms />} />
+          <Route path="/view-timetables" element={<ViewTimetables />} />
           <Route path="/generate-timetable" element={<GenerateTimetable />} />        
           <Route path="/payment-status" element={<PaymentStatus />} />
           </Routes>
