@@ -29,7 +29,7 @@ export const callAIModel = async (prompt) => {
         {
           headers: {
             Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            "HTTP-Referer": "http://localhost:3000",
+            "HTTP-Referer": "http://localhost:3000"||"",
             "X-Title": "Timetable Generator",
             "Content-Type": "application/json"
           },
