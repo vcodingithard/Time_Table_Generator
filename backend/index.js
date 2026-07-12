@@ -12,7 +12,7 @@ import classRoutes from "./routes/classRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import facultyRoutes from "./routes/facultyRoutes.js";
 import roomRoutes from "./routes/roomRoutes.js";
-import metadataRoutes from "./routes/metadataRoutes.js";
+import metadataRoutes from "./routes/metaDataRoutes.js";
 import timetableRoutes from "./routes/timetableRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js"
 // --- Model Import for Passport ---
