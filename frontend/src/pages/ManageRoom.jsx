@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { timetableApi } from "../api/timetableApi";
+import { useToast } from "../context/ToastContext";
 
 const ManageRooms = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
 
   const [formData, setFormData] = useState({
     room_no: "",
@@ -45,10 +47,10 @@ const ManageRooms = () => {
     try {
       const res = await timetableApi.createRoom(payload);
       setRooms(prev => [...prev, res.data.data]);
-      alert("Room added successfully!");
+      addToast("Room added successfully.", "success");
       setFormData({ room_no: "", room_type: "CLASSROOM", capacity: "", lab_number: "" });
     } catch (err) {
-      alert(err.response?.data?.error || "Error adding room");
+      addToast(err.response?.data?.error || "Error adding room", "error");
     }
   };
 
@@ -57,8 +59,9 @@ const ManageRooms = () => {
     try {
       await timetableApi.deleteRoom(id);
       setRooms(prev => prev.filter(r => r._id !== id));
+      addToast("Room removed.", "success");
     } catch (err) {
-      alert("Delete failed");
+      addToast("Delete failed", "error");
     }
   };
 

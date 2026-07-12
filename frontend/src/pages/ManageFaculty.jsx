@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { timetableApi } from '../api/timetableApi';
+import { useToast } from '../context/ToastContext';
 
 const ManageFaculty = () => {
   const [faculty, setFaculty] = useState([]);
@@ -17,6 +18,7 @@ const ManageFaculty = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [tempSelectedCourseIds, setTempSelectedCourseIds] = useState([]);
+  const { addToast } = useToast();
 
   const loadData = async () => {
     try {
@@ -61,9 +63,9 @@ const ManageFaculty = () => {
       const res = await timetableApi.createFaculty(formData);
       setFaculty(prev => [...prev, res.data.data]);
       setFormData({ faculty_code: "", faculty_name: "", max_hours_per_week: 18, courses_handled: [] });
-      alert("Faculty added successfully!");
+      addToast("Faculty added successfully.", "success");
     } catch (err) {
-      alert(err.response?.data?.error || "Error adding faculty");
+      addToast(err.response?.data?.error || "Error adding faculty", "error");
     }
   };
 
@@ -72,8 +74,9 @@ const ManageFaculty = () => {
     try {
       await timetableApi.deleteFaculty(id);
       setFaculty(prev => prev.filter(f => f._id !== id));
+      addToast("Faculty removed.", "success");
     } catch (err) {
-      alert("Delete failed");
+      addToast("Delete failed", "error");
     }
   };
 
@@ -97,10 +100,11 @@ const ManageFaculty = () => {
   const saveCourseAssignments = async () => {
     try {
       await timetableApi.updateFacultyCourses(selectedFaculty._id, tempSelectedCourseIds);
-      await loadData(); // Refresh to get populated course objects
+      await loadData();
       setShowModal(false);
+      addToast("Course assignments updated.", "success");
     } catch (err) {
-      alert("Update failed");
+      addToast("Update failed", "error");
     }
   };
 

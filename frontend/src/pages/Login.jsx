@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 import { useUser } from '../context/UserContext';
+import { useToast } from '../context/ToastContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setUser } = useUser();
+  const { addToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,9 +19,11 @@ const Login = () => {
     try {
       const res = await authApi.login({ email, password });
       setUser(res.data.user);
+      addToast('Welcome back! Your workspace is ready.', 'success');
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials');
+      addToast(err.response?.data?.message || 'Invalid credentials', 'error');
     } finally {
       setLoading(false);
     }

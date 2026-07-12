@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 import { useUser } from '../context/UserContext';
+import { useToast } from '../context/ToastContext';
 
 const Signup = () => {
   const [form, setForm] = useState({
@@ -16,6 +17,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setUser } = useUser();
+  const { addToast } = useToast();
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -25,10 +27,12 @@ const Signup = () => {
     setError(null);
     try {
       const res = await authApi.signup(form);
-      setUser(res.data.user); // Save to state, not localStorage
+      setUser(res.data.user);
+      addToast('Institute account created successfully.', 'success');
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Signup failed');
+      addToast(err.response?.data?.message || 'Signup failed', 'error');
     } finally {
       setLoading(false);
     }

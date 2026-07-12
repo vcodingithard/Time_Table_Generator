@@ -6,12 +6,14 @@ import {
 } from 'lucide-react';
 import { timetableApi } from '../api/timetableApi';
 import { load } from "@cashfreepayments/cashfree-js";
+import { useToast } from '../context/ToastContext';
 
 const Home = () => {
   const [plans, setPlans] = useState([]);
   const [mySub, setMySub] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const { addToast } = useToast();
   // 1. Load Data on Mount
   useEffect(() => {
     const loadData = async () => {
@@ -62,7 +64,7 @@ const Home = () => {
       });
 
     } catch (err) {
-      alert("Payment failed to start.");
+      addToast("Payment could not be started. Please try again.", "error");
     } finally {
       setProcessing(false);
     }
@@ -105,7 +107,7 @@ const Home = () => {
   const currentPlanId = mySub?.plan?._id;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
       {/* Header & Usage Tracker */}
       <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
